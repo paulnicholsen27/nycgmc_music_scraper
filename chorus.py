@@ -56,13 +56,17 @@ def get_music(concert_id):
       url = 'http://nycgmc.groupanizer.com' + link
       song_page = SESSION.get(url)
       song_page_soup = BeautifulSoup(song_page.content)
-      music_links = [music_link.get('href') for music_link in song_page_soup.find_all('a') if music_link.get('href').endswith('.pdf')]
-      for pdf_link in music_links:
-        print pdf_link
-        pass
-        # f = open('test.pdf', 'wb')
-        # f.write(SESSION.get(pdf_link).content)
-        # f.close()
+
+      music_links = {music_link.text:music_link.get('href') for music_link in song_page_soup.find_all('a') if music_link.get('href').endswith('.pdf')}
+      for filename in music_links:
+        if '/' in filename:
+          new_filename = filename.replace('/', '_')
+        else:
+          new_filename = filename
+        f = open('music_files/' + new_filename, 'wb')
+        f.write(SESSION.get(music_links[filename]).content)
+        f.close()
+      
 
 get_music(CONCERT_ID)
 print 'finished'
