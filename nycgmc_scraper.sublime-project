@@ -1,16 +1,19 @@
 {
-	"folders":
-	[
-		{
-			"path": "/Users/paulnichols/code/nycgmc_music_scraper",
-			"name": "Glee Club Scraper"
-		}
-	],
 	"build_systems":
 	[
 		{
-			"name": "Scraper",
-			"cmd" : ["/Users/paulnichols/.virtualenvs/chorus/bin/python", "$file"]
+			"cmd":
+			[
+				"/Users/nicholsp/.virtualenvs/chorus/bin/python",
+				"$file"
+			],
+			"name": "Scraper"
+		}
+	],
+	"folders":
+	[
+		{
+			"path": "/Users/nicholsp/code/nycgmc_music_scraper"
 		}
 	]
 }
