@@ -1,5 +1,6 @@
 import requests
 import urllib, urllib2
+import os
 from bs4 import BeautifulSoup
 
 CONCERT_ID = [130] #will later change to be input by user for diff concerts
@@ -63,10 +64,13 @@ def get_music(concert_id):
           new_filename = filename.replace('/', '_')
         else:
           new_filename = filename
-        f = open('music_files/' + new_filename, 'wb')
-        f.write(SESSION.get(music_links[filename]).content)
-        f.close()
+        if not os.path.exists('/Users/paulnichols/Dropbox/music_files'):
+            os.makedirs('/Users/paulnichols/Dropbox/music_files')
+        filepath = os.path.join('/Users/paulnichols/Dropbox/music_files', new_filename)
+        with open(filepath, 'w+') as f:
+          f.write(SESSION.get(music_links[filename]).content)
       
+
 
 get_music(CONCERT_ID)
 print 'finished'
