@@ -1,9 +1,11 @@
 import requests
+<<<<<<< HEAD
 import urllib
 import urllib2
 import re
 import os
 from os.path import isfile, join
+
 from bs4 import BeautifulSoup
 
 
@@ -85,6 +87,7 @@ def get_music(concert_id, session,directory):
         f = open(directory + new_filename, 'wb')
         f.write(session.get(music_links[filename]).content)
         f.close()
+
       
 # def get_files(directory):
   # existing_files: [ f for f in os.listdir(directory) if isfile(join(directory, f)) and f.endswith('.pdf')]
@@ -97,4 +100,5 @@ def main():
   get_music(CONCERT_ID,session, directory)
 
 main()
+
 print 'finished'
