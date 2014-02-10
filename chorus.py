@@ -60,13 +60,10 @@ def get_music(concert_id):
 
       music_links = {music_link.text:music_link.get('href') for music_link in song_page_soup.find_all('a') if music_link.get('href').endswith('.pdf')}
       for filename in music_links:
-        if '/' in filename:
-          new_filename = filename.replace('/', '_')
-        else:
-          new_filename = filename
+        cleaned_filename = filename.replace('/', '_')
         if not os.path.exists('/Users/paulnichols/Dropbox/music_files'):
             os.makedirs('/Users/paulnichols/Dropbox/music_files')
-        filepath = os.path.join('/Users/paulnichols/Dropbox/music_files', new_filename)
+        filepath = os.path.join('/Users/paulnichols/Dropbox/music_files', cleaned_filename)
         with open(filepath, 'w+') as f:
           f.write(SESSION.get(music_links[filename]).content)
       
