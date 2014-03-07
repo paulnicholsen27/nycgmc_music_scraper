@@ -12,7 +12,7 @@ from pytube import YouTube
 from pprint import pprint
 
 import pdb
-
+from config import username, password
 yt = YouTube()
 
 def get_form_params(session, url, cookies):
@@ -27,7 +27,7 @@ def get_form_params(session, url, cookies):
     else:
         return form_build_id[0].get('value'), None
 
-def login(session, name='paul.nichols', password='Ella27!'):
+def login(session, name, password):
     '''takes as input a username and password, returns logged-in cookie'''
     form_build_id, form_token = get_form_params(session, 'http://nycgmc.groupanizer.com/user/login?destination=/',{})
     print "form build_id:", form_build_id
@@ -56,7 +56,7 @@ def parse_page(concert_id, session):
     sheet_music_links = []
     video_links = []
     url = 'http://nycgmc.groupanizer.com/music'
-    cookies = login(session)
+    cookies = login(session, username, password)
     form_build_id, form_token = get_form_params(session, url, cookies)
     print "concert_id:", concert_id
     # song_title_pattern = re.compile('(.+)\([v\d]')
