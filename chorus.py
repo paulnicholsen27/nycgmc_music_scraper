@@ -127,23 +127,25 @@ def process_recording_links(session, recording_links, directory_str):
         if not isfile(fullpath):
             if fullpath.lower().find('full') != -1 or fullpath.lower().find(').mp3')!=-1:
                 write_recording_to_file(session, recording_link, full_dir)
-            elif fullpath.lower().find('tenor 1')!=-1:
-                write_recording_to_file(session, recording_link, tenorI_dir)
-            elif fullpath.lower().find('tenor 2')!=-1:
-               write_recording_to_file(session, recording_link, tenorII_dir)
-            elif fullpath.lower().find('baritone')!=-1:
-                write_recording_to_file(session, recording_link, baritone_dir)
-            elif fullpath.lower().find('bass')!=-1:
-                write_recording_to_file(session, recording_link, bass_dir)        
+    #         elif fullpath.lower().find('tenor 1')!=-1:
+    #             write_recording_to_file(session, recording_link, tenorI_dir)
+    #         elif fullpath.lower().find('tenor 2')!=-1:
+    #            write_recording_to_file(session, recording_link, tenorII_dir)
+    #         elif fullpath.lower().find('baritone')!=-1:
+    #             write_recording_to_file(session, recording_link, baritone_dir)
+    #         elif fullpath.lower().find('bass')!=-1:
+    #             write_recording_to_file(session, recording_link, bass_dir)        
 
 def write_recording_to_file(session, link, directory_str):
-
-    req = urllib2.Request(link[1])
-    response = urllib2.urlopen(req)
-    data = response.read()
+    #link should be (filename, url)
     new_filename = link[0].replace('/', '_')
+    destination = directory_str + new_filename
+    response = urllib2.urlopen(link[1])
+    # req = urllib.urlretrieve(link[1], directory_str + new_filename)
+    # response = urllib2.urlopen(req)
+    # data = response.read()
     f = open(directory_str + new_filename, 'wb')
-    f.write(data)
+    f.write(session.get(link[1]).content)
     f.close()
     return
 
@@ -168,10 +170,10 @@ def main():
     sheet_music_directory = directory_str + 'sheet_music/'
     choralography_directory = directory_str + 'choralography/'
     recording_directory = directory_str + 'recordings/'
-    empty_folder(directory_str, sheet_music_directory, choralography_directory)
+    # empty_folder(directory_str, sheet_music_directory, choralography_directory)
     sheet_music_links, video_links, recording_links = parse_page(concert_id, session)
-    write_sheet_music_to_file(session, sheet_music_links, sheet_music_directory)
-    write_videos_to_file(session, video_links, choralography_directory)
+    # write_sheet_music_to_file(session, sheet_music_links, sheet_music_directory)
+    # write_videos_to_file(session, video_links, choralography_directory)
     process_recording_links(session, recording_links, recording_directory)
     print 'Finished!'
 
