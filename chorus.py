@@ -121,14 +121,12 @@ def process_recording_links(session, recording_links, directory_str):
     tenorII_dir = directory_str + 'tenorII/'
     baritone_dir = directory_str + 'baritone/'
     bass_dir = directory_str + 'bass/'
+    full_dir = directory_str + 'full/'
     for recording_link in recording_links:
         fullpath = '{0}{1}'.format(directory_str, recording_link[0].replace('/', '_'))
         if not isfile(fullpath):
-            if fullpath.lower().find('full') != -1:
-                write_recording_to_file(session, recording_link, tenorI_dir)
-                write_recording_to_file(session, recording_link, tenorII_dir)
-                write_recording_to_file(session, recording_link, baritone_dir)
-                write_recording_to_file(session, recording_link, bass_dir)
+            if fullpath.lower().find('full') != -1 or fullpath.lower().find(').mp3')!=-1:
+                write_recording_to_file(session, recording_link, full_dir)
             elif fullpath.lower().find('tenor 1')!=-1:
                 write_recording_to_file(session, recording_link, tenorI_dir)
             elif fullpath.lower().find('tenor 2')!=-1:
@@ -139,9 +137,13 @@ def process_recording_links(session, recording_links, directory_str):
                 write_recording_to_file(session, recording_link, bass_dir)        
 
 def write_recording_to_file(session, link, directory_str):
+
+    req = urllib2.Request(link[1])
+    response = urllib2.urlopen(req)
+    data = response.read()
     new_filename = link[0].replace('/', '_')
     f = open(directory_str + new_filename, 'wb')
-    f.write(session.get(link[1]))
+    f.write(data)
     f.close()
     return
 
@@ -168,8 +170,8 @@ def main():
     recording_directory = directory_str + 'recordings/'
     empty_folder(directory_str, sheet_music_directory, choralography_directory)
     sheet_music_links, video_links, recording_links = parse_page(concert_id, session)
-    # write_sheet_music_to_file(session, sheet_music_links, sheet_music_directory)
-    # write_videos_to_file(session, video_links, choralography_directory)
+    write_sheet_music_to_file(session, sheet_music_links, sheet_music_directory)
+    write_videos_to_file(session, video_links, choralography_directory)
     process_recording_links(session, recording_links, recording_directory)
     print 'Finished!'
 
