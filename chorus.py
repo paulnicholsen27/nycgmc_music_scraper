@@ -13,6 +13,7 @@ from pprint import pprint
 
 import pdb
 from config import username, password
+
 yt = YouTube()
 
 def get_form_params(session, url, cookies):
@@ -46,7 +47,7 @@ def empty_folder(*args):
         for f in os.listdir(folder):
             file_path = os.path.join(folder, f)
             try:
-                if os.path.isfile(file_path) and file_path.endswith('.pdf'):
+                if os.path.isfile(file_path) and (file_path.endswith('.pdf') or file_path.endswith('.mp3')):
                     os.unlink(file_path)
             except Exception, e:
                 print e
@@ -87,7 +88,7 @@ def parse_page(concert_id, session):
                 video_links.append(music_link.get('href'))
             elif music_link.get('href').endswith('.mp3'):
                 recording_links.append((music_link.text, music_link.get('href')))   
-    return sheet_music_links, video_links, recording_links
+    return sheet_music_links, video_links, recording_links, cookies
 
 def write_sheet_music_to_file(session, sheet_music_links, directory_str):
     '''takes as input list of music links and writes all sheet music to specified directory_str
@@ -115,18 +116,21 @@ def write_videos_to_file(session, video_links, directory_str):
         if not isfile(fullpath):
             video.download(directory_str)
 
-def process_recording_links(session, recording_links, directory_str):
-    #is not checking isfile in correct place
+def process_recording_links(session, recording_links, directory_str, cookies):
     tenorI_dir = directory_str + 'tenorI/'
     tenorII_dir = directory_str + 'tenorII/'
     baritone_dir = directory_str + 'baritone/'
     bass_dir = directory_str + 'bass/'
     full_dir = directory_str + 'full/'
+    for directory in [tenorI_dir, tenorII_dir, baritone_dir, bass_dir, full_dir]:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+    empty_folder(tenorI_dir, tenorII_dir, bass_dir, full_dir, baritone_dir)
     for recording_link in recording_links:
         fullpath = '{0}{1}'.format(directory_str, recording_link[0].replace('/', '_'))
         if not isfile(fullpath):
             if fullpath.lower().find('full') != -1 or fullpath.lower().find(').mp3')!=-1:
-                write_recording_to_file(session, recording_link, full_dir)
+                write_recording_to_file(session, recording_link, full_dir, cookies)
     #         elif fullpath.lower().find('tenor 1')!=-1:
     #             write_recording_to_file(session, recording_link, tenorI_dir)
     #         elif fullpath.lower().find('tenor 2')!=-1:
@@ -136,16 +140,24 @@ def process_recording_links(session, recording_links, directory_str):
     #         elif fullpath.lower().find('bass')!=-1:
     #             write_recording_to_file(session, recording_link, bass_dir)        
 
-def write_recording_to_file(session, link, directory_str):
+def write_recording_to_file(session, link, directory_str, cookies):
     #link should be (filename, url)
     new_filename = link[0].replace('/', '_')
     destination = directory_str + new_filename
     response = urllib2.urlopen(link[1])
+    # payload = {'name' : username, 
+    # 'pass' : password,
+    # 'form_build_id' : form_build_id,
+    # 'form_id' : 'user_login', 
+    # 'op' : 'Log in'}
+    # logged_in = session.post('http://nycgmc.groupanizer.com/user/login?destination=/', data=payload)
+    # cookies = logged_in.cookies
     # req = urllib.urlretrieve(link[1], directory_str + new_filename)
     # response = urllib2.urlopen(req)
     # data = response.read()
+    song = session.get(session.get(link[1]).content, cookies=cookies)
     f = open(directory_str + new_filename, 'wb')
-    f.write(session.get(link[1]).content)
+    f.write(song)
     f.close()
     return
 
@@ -161,21 +173,30 @@ def unshorten_url(url):
         return url
 
 def main():
-    concert_id = [130] #will later change to be input by user for diff concerts
+    concert_dict = {134: 'dublin', 163: 'london_non_bgs', 132: 'st_john'}
+    #will later change to be input by user for diff concerts
     session = requests.session()
-    if os.path.exists('/Users/nicholsp/Dropbox/chorus_music/'):
-        directory_str = '/Users/nicholsp/Dropbox/chorus_music/'
-    else:
-        directory_str = '/Users/paulnichols/Dropbox/chorus_music/'
-    sheet_music_directory = directory_str + 'sheet_music/'
-    choralography_directory = directory_str + 'choralography/'
-    recording_directory = directory_str + 'recordings/'
-    # empty_folder(directory_str, sheet_music_directory, choralography_directory)
-    sheet_music_links, video_links, recording_links = parse_page(concert_id, session)
-    # write_sheet_music_to_file(session, sheet_music_links, sheet_music_directory)
-    # write_videos_to_file(session, video_links, choralography_directory)
-    process_recording_links(session, recording_links, recording_directory)
-    print 'Finished!'
+    for concert_id in concert_dict:
+        concert_name = concert_dict[concert_id]
+        if os.path.exists('/Users/nicholsp/Dropbox/chorus_music/'):
+            #cuz I work on different computers
+            base_directory_str = '/Users/nicholsp/Dropbox/chorus_music/'
+        else:
+            base_directory_str = '/Users/paulnichols/Dropbox/chorus_music/'
+        concert_directory_str = base_directory_str + concert_name + '/'
+        sheet_music_directory = concert_directory_str + 'sheet_music/'
+        choralography_directory = concert_directory_str + 'choralography/'
+        recording_directory = concert_directory_str + 'recordings/'
+        for directory in [concert_directory_str, sheet_music_directory, choralography_directory, recording_directory]:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+        empty_folder(concert_directory_str, sheet_music_directory, choralography_directory)
+        sheet_music_links, video_links, recording_links, cookies = parse_page(concert_id, session)
+        write_sheet_music_to_file(session, sheet_music_links, sheet_music_directory)
+        write_videos_to_file(session, video_links, choralography_directory)
+        # process_recording_links(session, recording_links, recording_directory, cookies)
+        print 'Finished downloading for concert %s' %concert_name
 
-main()
+if __name__ == '__main__':
+    main()
 
